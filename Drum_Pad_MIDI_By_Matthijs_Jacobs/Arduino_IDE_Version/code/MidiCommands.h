@@ -1,0 +1,137 @@
+#ifndef MIDICOMMAND_H
+#define MIDICOMMAND_H
+
+//DEFAULT COMMAND
+const int DEFCMD = 0x9;
+//END DEFAULT COMMAND
+
+//CHANNELS
+const int CHANNEL1 = 144;
+const int CHANNEL2 = 145;
+const int CHANNEL3 = 146;
+const int CHANNEL4 = 147;
+const int CHANNEL5 = 148;
+const int CHANNEL6 = 149;
+const int CHANNEL7 = 150;
+const int CHANNEL8 = 151;
+const int CHANNEL9 = 152;
+const int CHANNEL10 = 153;
+const int CHANNEL11 = 154;
+const int CHANNEL12 = 155;
+const int CHANNEL13 = 156;
+const int CHANNEL14 = 157;
+const int CHANNEL15 = 158;
+const int CHANNEL16 = 159;
+//END CHANNELS
+
+//PITCHES
+const int NoteC0 = 12;
+const int NoteCSharp0 = 13;
+const int NoteD0 = 14;
+const int NoteEFlat0 = 15;
+const int NoteE0 = 16;
+const int NoteF0 = 17;
+const int NoteFSharp0 = 18;
+const int NoteG0 = 19;
+const int NoteGSharp0 = 20;
+const int NoteA0 = 21;
+const int NoteBFlat0 = 22;
+const int NoteB0 = 23;
+const int NoteC1 = 24;
+const int NoteCSharp1 = 25;
+const int NoteD1 = 26;
+const int NoteEFlat1 = 27;
+const int NoteE1 = 28;
+const int NoteF1 = 29;
+const int NoteFSharp1 = 30;
+const int NoteG1 = 31;
+const int NoteGSharp1 = 32;
+const int NoteA1 = 33;
+const int NoteBFlat1 = 34;
+const int NoteB1 = 35;
+const int NoteC2 = 36;
+const int NoteCSharp2 = 37;
+const int NoteD2 = 38;
+const int NoteEFlat2 = 39;
+const int NoteE2 = 40;
+const int NoteF2 = 41;
+const int NoteFSharp2 = 42;
+const int NoteG2 = 43;
+const int NoteGSharp2 = 44;
+const int NoteA2 = 45;
+const int NoteBFlat2 = 46;
+const int NoteB2 = 47;
+const int NoteC3 = 48;
+const int NoteCSharp3 = 49;
+const int NoteD3 = 50;
+const int NoteEFlat3 = 51;
+const int NoteE3 = 52;
+const int NoteF3 = 53;
+const int NoteFSharp3 = 54;
+const int NoteG3 = 55;
+const int NoteGSharp3 = 56;
+const int NoteA3 = 57;
+const int NoteBFlat3 = 58;
+const int NoteB3 = 59;
+const int NoteC4 = 60;
+const int NoteCSharp4 = 61;
+const int NoteD4 = 62;
+const int NoteEFlat4 = 63;
+const int NoteE4 = 64;
+const int NoteF4 = 65;
+const int NoteFSharp4 = 66;
+const int NoteG4 = 67;
+const int NoteGSharp4 = 68;
+const int NoteA4 = 69;
+const int NoteBFlat4 = 70;
+const int NoteB4 = 71;
+const int NoteC5 = 72;
+const int NoteCSharp5 = 73;
+const int NoteD5 = 74;
+const int NoteEFlat5 = 75;
+const int NoteE5 = 76;
+const int NoteF5 = 77;
+const int NoteFSharp5 = 78;
+const int NoteG5 = 79;
+const int NoteGSharp5 = 80;
+const int NoteA5 = 81;
+const int NoteBFlat5 = 82;
+const int NoteB5 = 83;
+const int NoteC6 = 84;
+const int NoteCSharp6 = 85;
+const int NoteD6 = 86;
+const int NoteEFlat6 = 87;
+const int NoteE6 = 88;
+const int NoteF6 = 89;
+const int NoteFSharp6 = 90;
+const int NoteG6 = 91;
+const int NoteGSharp6 = 92;
+const int NoteA6 = 93;
+const int NoteBFlat6 = 94;
+const int NoteB6 = 95;
+const int NoteC7 = 96;
+const int NoteCSharp7 = 97;
+const int NoteD7 = 98;
+const int NoteEb7 = 99;
+const int NoteE7 = 100;
+const int NoteF7 = 101;
+const int NoteFSharp7 = 102;
+const int NoteG7 = 103;
+const int NoteGSharp7 = 104;
+const int NoteA7 = 105;
+const int NoteBFlat7 = 106;
+const int NoteB7 = 107;
+const int NoteC8 = 108;
+const int NoteCSharp8 = 109;
+const int NoteD8 = 110;
+const int NoteEFlat8 = 111;
+const int NoteE8 = 112;
+const int NoteF8 = 113;
+const int NoteFSharp8 = 114;
+const int NoteG8 = 115;
+const int NoteGSharp8 = 116;
+const int NoteA8 = 117;
+const int NoteBFlat8 = 118;
+const int NoteB8 = 119;
+//END PITCHES
+#endif //END MIDICOMMAND_H
