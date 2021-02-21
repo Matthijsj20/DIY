@@ -1,0 +1,21 @@
+usb up left
+d15 NEXTCAMERA
+d2 PITLIMITER
+d4 FUEL0
+d5 FUEL1
+d18 FUEL2
+d19 LCDD4
+d21 LCDD5
+d22 LCDD6
+d23 LCDD7
+usb up right
+d13 
+d12 
+d14 
+d27 
+d26 
+d25 ERS4
+d33 ERS3
+d32 ERS2
+d35 ERS1
+d34 ERS0

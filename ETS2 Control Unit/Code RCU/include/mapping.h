@@ -1,0 +1,25 @@
+#ifndef MAPPING_H
+#define MAPPING_H
+
+#define DIFLOCKPIN 2
+#define ALARMPIN 4
+
+#define LCDEN 12
+#define LCDRS 13
+#define LCDD4 14
+#define LCDDISPLATTOGGLEPIN 15
+#define LCDD7 25
+#define LCDD6 26
+#define LCDD5 27
+
+#define FIRSTLIGHTPIN 23
+#define SECONDLIGHTPIN 22
+#define THIRDLIGHTPIN 21
+#define FOURTHLIGHTPIN 33
+#define FIFTHLIGHTPIN 32
+#define SIXEDLIGHTPIN 35
+
+#define FIRSTKEYPIN 5
+#define SECONDKEYPIN 18
+#define THIRDKEYPIN 19
+#endif
