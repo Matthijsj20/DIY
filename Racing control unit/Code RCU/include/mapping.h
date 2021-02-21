@@ -1,0 +1,23 @@
+#ifndef MAPPING_H
+#define MAPPING_H
+
+#define NEXTCAMERAPIN 2
+#define PITLIMITERPIN 4
+#define FIRSTFUELPIN 5
+#define LCDEN 12
+#define LCDRS 13
+#define LCDD4 14
+#define LCDDISPLATTOGGLEPIN 15
+#define SECONDFUELPIN 18
+#define THIRDFUELPIN 19
+#define THIRDERSPIN 21
+#define SECONDERSPIN 22
+#define FIRSTERSPIN 23
+#define LCDD7 25
+#define LCDD6 26
+#define LCDD5 27
+#define FIFTHERSPIN 32
+#define FOURTHERSPIN 33
+#define SIXEDERSPIN 35
+
+#endif
