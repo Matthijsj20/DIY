@@ -11,3 +11,5 @@ https://www.tinytronics.nl/shop/nl/arduino/main-boards/robotdyn-micro-atmega32u4
 https://www.bitsandparts.nl/Trillingssensor-analoog-keramisch-pi%C3%ABzo-p1907043
 https://code.visualstudio.com/Download
 https://platformio.org/platformio-ide
+
+When found bugs please add issue.
