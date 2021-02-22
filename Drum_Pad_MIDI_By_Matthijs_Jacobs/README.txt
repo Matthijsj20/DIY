@@ -12,4 +12,4 @@ https://www.bitsandparts.nl/Trillingssensor-analoog-keramisch-pi%C3%ABzo-p190704
 https://code.visualstudio.com/Download
 https://platformio.org/platformio-ide
 
-When found bugs please add issue.
+When found bugs please add issue on github repository Drum_pad_MIDI_By_Matthijs_Jacobs.
