@@ -65,6 +65,7 @@ void loop()
             break;
 
           case 1:
+            Serial.println("BLE E-ON");
             //turn electrics on
             bleKeyboard.press(ELECTRICS);
             delay(BUTTONREADGAMEDELAY);
@@ -72,6 +73,7 @@ void loop()
             break;
 
           case 2:
+            Serial.println("BLE M-ON");
             //turn engine on
             bleKeyboard.press(ENGINE);
             delay(BUTTONREADGAMEDELAY);
@@ -79,6 +81,7 @@ void loop()
             break;
 
           case 3:
+            Serial.println("BLE EM-ON");
             //turn electrics and engine on
             bleKeyboard.press(ELECTRICS);
             delay(BUTTONREADGAMEDELAY);
