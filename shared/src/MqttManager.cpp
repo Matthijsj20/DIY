@@ -25,8 +25,8 @@ void MqttManager::connect() {
   Serial.print("Connecting to MQTT broker");
   while (!mqtt.connected()) {
     const bool connected = strlen(MQTT_USER) > 0
-                               ? mqtt.connect("doorbell-buzzer", MQTT_USER, MQTT_PASS)
-                               : mqtt.connect("doorbell-buzzer");
+                               ? mqtt.connect(MQTT_CLIENT_ID, MQTT_USER, MQTT_PASS)
+                               : mqtt.connect(MQTT_CLIENT_ID);
     if (!connected) {
       delay(2000);
       Serial.print('.');

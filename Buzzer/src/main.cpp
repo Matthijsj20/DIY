@@ -1,8 +1,8 @@
 #include <Arduino.h>
 #include <cstring>
 
-#include "WiFi/WifiManager.hpp"
-#include "Mqtt/MqttManager.hpp"
+#include "WifiManager.hpp"
+#include "MqttManager.hpp"
 #include "pins.hpp"
 
 namespace {

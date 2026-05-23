@@ -4,6 +4,11 @@
 
 #include "secrets.h"
 
+struct MqttIncomingMessage {
+  String topic;
+  String payload;
+};
+
 class MqttManager {
 public:
   MqttManager();
@@ -47,7 +52,20 @@ public:
    */
   void subscribe(const char *topic);
 
+  /**
+   * Retrieve the last incoming message, if one has not been read yet.
+   * @param message Out parameter filled with the message when one is available.
+   * @return True if a message was retrieved, false if none is pending.
+   */
+  bool getMessage(MqttIncomingMessage &message);
+
 private:
+  void storeMessage(const char *topic, const byte *payload, unsigned int length);
+
+  static MqttManager *instance;
+
   WiFiClient wifiClient;
   PubSubClient mqtt;
+  bool messagePending = false;
+  MqttIncomingMessage pendingMessage;
 };
