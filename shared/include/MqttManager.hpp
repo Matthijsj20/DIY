@@ -21,7 +21,7 @@ public:
   bool isConnected();
 
   /**
-   * Connect to the MQTT broker. Blocks until connected.
+   * Start or retry MQTT connection. Call repeatedly from loop(); non-blocking.
    */
   void connect();
 
@@ -60,7 +60,8 @@ public:
   bool getMessage(MqttIncomingMessage &message);
 
 private:
-  void storeMessage(const char *topic, const byte *payload, unsigned int length);
+  void storeMessage(const char *topic, const byte *payload,
+                    unsigned int length);
 
   static MqttManager *instance;
 
@@ -68,4 +69,10 @@ private:
   PubSubClient mqtt;
   bool messagePending = false;
   MqttIncomingMessage pendingMessage;
+
+  static constexpr unsigned long kRetryIntervalMs = 2000;
+
+  unsigned long lastAttemptMs = 0;
+  bool connectingLogged = false;
+  bool loggedConnected = false;
 };

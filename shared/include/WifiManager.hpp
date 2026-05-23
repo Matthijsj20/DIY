@@ -1,6 +1,6 @@
 #pragma once
-#include <WiFi.h>
 #include "secrets.h"
+#include <WiFi.h>
 
 class WifiManager {
 public:
@@ -8,8 +8,7 @@ public:
   ~WifiManager();
 
   /**
-   * Connect to the WiFi network.
-   * @return True if the connection was successful, false otherwise.
+   * Start or retry WiFi connection. Call repeatedly from loop(); non-blocking.
    */
   void connect();
 
@@ -24,4 +23,11 @@ public:
    * @return True if the disconnection was successful, false otherwise.
    */
   bool disconnect();
+
+private:
+  static constexpr unsigned long kRetryIntervalMs = 500;
+
+  unsigned long lastAttemptMs = 0;
+  bool connectionStarted = false;
+  bool loggedConnected = false;
 };

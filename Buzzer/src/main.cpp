@@ -9,52 +9,98 @@ namespace {
 WifiManager wifiManager;
 MqttManager mqttManager;
 
-bool ledOn = false;
-unsigned long ledOffAt = 0;
+bool mqttSubscribed = false;
+bool internalLedOn = false;
+unsigned long internalLedOffAt = 0;
+unsigned long lastBlinkMs = 0;
+bool blinkOn = false;
 
-constexpr unsigned long kLedOnDurationMs = 5000;
+constexpr unsigned long kInternalLedOnDurationMs = 5000;
+constexpr unsigned long kLedBlinkIntervalMs = 500;
 
-void updateLed() {
-  if (ledOn && millis() >= ledOffAt) {
+void setRedLed(bool on) {
+  digitalWrite(LED_RED_PIN, on ? HIGH : LOW);
+}
+
+void setGreenLed(bool on) {
+  digitalWrite(LED_GREEN_PIN, on ? HIGH : LOW);
+}
+
+void updateStatusLeds() {
+  const unsigned long nowMs = millis();
+  if (nowMs - lastBlinkMs >= kLedBlinkIntervalMs) {
+    lastBlinkMs = nowMs;
+    blinkOn = !blinkOn;
+  }
+
+  const bool wifiConnected = wifiManager.isConnected();
+  const bool mqttConnected = mqttManager.isConnected();
+
+  if (wifiConnected && mqttConnected) {
+    setRedLed(false);
+    setGreenLed(true);
+    return;
+  }
+
+  setGreenLed(blinkOn);
+
+  if (!wifiConnected) {
+    setRedLed(true);
+  } else {
+    setRedLed(blinkOn);
+  }
+}
+
+void updateInternalLed() {
+  if (internalLedOn && millis() >= internalLedOffAt) {
     digitalWrite(INTERNAL_LED_PIN, LOW);
-    ledOn = false;
+    internalLedOn = false;
   }
 }
 
 void onDoorbellPressed() {
-  if (ledOn) {
+  if (internalLedOn) {
     return;
   }
   digitalWrite(INTERNAL_LED_PIN, HIGH);
-  ledOn = true;
-  ledOffAt = millis() + kLedOnDurationMs;
+  internalLedOn = true;
+  internalLedOffAt = millis() + kInternalLedOnDurationMs;
 }
 
 } // namespace
 
 void setup() {
   Serial.begin(115200);
+  pinMode(LED_RED_PIN, OUTPUT);
+  pinMode(LED_GREEN_PIN, OUTPUT);
   pinMode(INTERNAL_LED_PIN, OUTPUT);
+  setRedLed(true);
+  setGreenLed(false);
+  digitalWrite(INTERNAL_LED_PIN, LOW);
 
-  wifiManager.connect(); // Blocking call until connected
-  mqttManager.connect(); // Blocking call until connected
-  mqttManager.subscribe("/doorbell/pressed");
+  wifiManager.connect();
 }
 
 void loop() {
-  if (!wifiManager.isConnected()) {
-    Serial.println("WiFi lost, reconnecting...");
-    wifiManager.connect(); // Blocking call until connected
-  }
+  updateStatusLeds();
 
-  if (!mqttManager.isConnected()) {
-    Serial.println("MQTT broker connection lost, reconnecting...");
-    mqttManager.connect(); // Blocking call until connected
-    mqttManager.subscribe("/doorbell/pressed");
+  wifiManager.connect();
+  if (wifiManager.isConnected()) {
+    mqttManager.connect();
+    if (mqttManager.isConnected()) {
+      if (!mqttSubscribed) {
+        mqttManager.subscribe("/doorbell/pressed");
+        mqttSubscribed = true;
+      }
+    } else {
+      mqttSubscribed = false;
+    }
+  } else {
+    mqttSubscribed = false;
   }
 
   mqttManager.loop();
-  updateLed();
+  updateInternalLed();
 
   MqttIncomingMessage message;
   if (mqttManager.getMessage(message)) {
