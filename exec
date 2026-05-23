@@ -5,22 +5,26 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 usage() {
   cat <<'EOF'
-Usage: ./diy <command> -p <project> [options]
+Usage: ./exec <command> [-p <project>] [options]
 
 Commands:
   build     Compile firmware
   upload    Build and upload to the device
+  monitor   Open the serial monitor
+  compiledb Refresh IDE IntelliSense (compile_commands.json + shared paths)
 
 Projects (-p, --project):
-  bell      Doorbell detector (Bell/)
-  buzzer    Doorbell buzzer (Buzzer/)
+  bell      Doorbell detector (bell/)
+  buzzer    Doorbell buzzer (buzzer/)
 
 Examples:
-  ./diy build -p buzzer
-  ./diy upload --project bell
+  ./exec build -p buzzer
+  ./exec upload --project bell
+  ./exec monitor
+  ./exec compiledb
 
 Options:
-  -p, --project <name>   Required. bell or buzzer
+  -p, --project <name>   Required for build/upload. Optional for compiledb.
   -h, --help             Show this help
 EOF
 }
@@ -50,8 +54,8 @@ resolve_project_dir() {
   local name
   name="$(to_lower "$1")"
   case "$name" in
-    bell) echo "$ROOT/Bell" ;;
-    buzzer) echo "$ROOT/Buzzer" ;;
+    bell) echo "$ROOT/bell" ;;
+    buzzer) echo "$ROOT/buzzer" ;;
     *)
       echo "Error: unknown project '$1'. Use 'bell' or 'buzzer'." >&2
       exit 1
@@ -64,7 +68,7 @@ PROJECT=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    build|upload)
+    build|upload|monitor|compiledb)
       if [[ -n "$COMMAND" ]]; then
         echo "Error: only one command allowed." >&2
         exit 1
@@ -93,25 +97,41 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [[ -z "$COMMAND" ]]; then
-  echo "Error: missing command (build or upload)." >&2
+  echo "Error: missing command (build, upload, monitor, or compiledb)." >&2
   usage >&2
   exit 1
 fi
 
-if [[ -z "$PROJECT" ]]; then
+if [[ -z "$PROJECT" && "$COMMAND" != "compiledb" && "$COMMAND" != "monitor" ]]; then
   echo "Error: missing project. Use -p bell or -p buzzer." >&2
   usage >&2
   exit 1
 fi
 
-PROJECT_DIR="$(resolve_project_dir "$PROJECT")"
+if [[ -n "$PROJECT" && "$COMMAND" == "monitor" ]]; then
+  echo "Error: monitor does not take a project. Use: ./exec monitor" >&2
+  exit 1
+fi
+
 PIO="$(find_pio)"
 
 case "$COMMAND" in
   build)
+    PROJECT_DIR="$(resolve_project_dir "$PROJECT")"
     exec "$PIO" run -d "$PROJECT_DIR"
     ;;
   upload)
+    PROJECT_DIR="$(resolve_project_dir "$PROJECT")"
     exec "$PIO" run -d "$PROJECT_DIR" -t upload
+    ;;
+  monitor)
+    exec "$PIO" device monitor -b 115200
+    ;;
+  compiledb)
+    if [[ -n "$PROJECT" ]]; then
+      PROJECT_DIR="$(resolve_project_dir "$PROJECT")"
+      exec "$PIO" run -d "$PROJECT_DIR" -t compiledb
+    fi
+    exec python3 "$ROOT/scripts/refresh-intellisense.py"
     ;;
 esac
