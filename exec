@@ -1,0 +1,117 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+usage() {
+  cat <<'EOF'
+Usage: ./diy <command> -p <project> [options]
+
+Commands:
+  build     Compile firmware
+  upload    Build and upload to the device
+
+Projects (-p, --project):
+  bell      Doorbell detector (Bell/)
+  buzzer    Doorbell buzzer (Buzzer/)
+
+Examples:
+  ./diy build -p buzzer
+  ./diy upload --project bell
+
+Options:
+  -p, --project <name>   Required. bell or buzzer
+  -h, --help             Show this help
+EOF
+}
+
+find_pio() {
+  if command -v pio >/dev/null 2>&1; then
+    command -v pio
+    return
+  fi
+  if command -v platformio >/dev/null 2>&1; then
+    command -v platformio
+    return
+  fi
+  if [[ -x "${HOME}/.platformio/penv/bin/pio" ]]; then
+    echo "${HOME}/.platformio/penv/bin/pio"
+    return
+  fi
+  echo "Error: PlatformIO (pio) not found. Install from https://platformio.org or add it to PATH." >&2
+  exit 1
+}
+
+to_lower() {
+  printf '%s' "$1" | tr '[:upper:]' '[:lower:]'
+}
+
+resolve_project_dir() {
+  local name
+  name="$(to_lower "$1")"
+  case "$name" in
+    bell) echo "$ROOT/Bell" ;;
+    buzzer) echo "$ROOT/Buzzer" ;;
+    *)
+      echo "Error: unknown project '$1'. Use 'bell' or 'buzzer'." >&2
+      exit 1
+      ;;
+  esac
+}
+
+COMMAND=""
+PROJECT=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    build|upload)
+      if [[ -n "$COMMAND" ]]; then
+        echo "Error: only one command allowed." >&2
+        exit 1
+      fi
+      COMMAND="$1"
+      ;;
+    -p|--project)
+      shift
+      if [[ $# -eq 0 ]]; then
+        echo "Error: -p/--project requires a value." >&2
+        exit 1
+      fi
+      PROJECT="$1"
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "Error: unknown argument '$1'." >&2
+      usage >&2
+      exit 1
+      ;;
+  esac
+  shift
+done
+
+if [[ -z "$COMMAND" ]]; then
+  echo "Error: missing command (build or upload)." >&2
+  usage >&2
+  exit 1
+fi
+
+if [[ -z "$PROJECT" ]]; then
+  echo "Error: missing project. Use -p bell or -p buzzer." >&2
+  usage >&2
+  exit 1
+fi
+
+PROJECT_DIR="$(resolve_project_dir "$PROJECT")"
+PIO="$(find_pio)"
+
+case "$COMMAND" in
+  build)
+    exec "$PIO" run -d "$PROJECT_DIR"
+    ;;
+  upload)
+    exec "$PIO" run -d "$PROJECT_DIR" -t upload
+    ;;
+esac
