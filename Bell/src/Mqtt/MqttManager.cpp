@@ -22,8 +22,8 @@ void MqttManager::connect() {
   Serial.print("Connecting to MQTT broker");
   while (!mqtt.connected()) {
     const bool connected = strlen(MQTT_USER) > 0
-                               ? mqtt.connect("esp32-doorbell", MQTT_USER, MQTT_PASS)
-                               : mqtt.connect("esp32-doorbell");
+                               ? mqtt.connect("doorbell-detector", MQTT_USER, MQTT_PASS)
+                               : mqtt.connect("doorbell-detector");
     if (!connected) {
       delay(2000);
       Serial.print('.');

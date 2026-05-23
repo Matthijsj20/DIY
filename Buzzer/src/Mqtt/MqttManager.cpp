@@ -2,7 +2,10 @@
 
 #include <cstring>
 
+MqttManager *MqttManager::instance = nullptr;
+
 MqttManager::MqttManager() : mqtt(wifiClient) {
+  instance = this;
   mqtt.setServer(MQTT_BROKER, MQTT_PORT);
   mqtt.setCallback(onMqttMessage);
 }
@@ -42,10 +45,33 @@ bool MqttManager::publish(const char *topic, const char *message) {
   return mqtt.publish(topic, message);
 }
 
+void MqttManager::subscribe(const char *topic) {
+  mqtt.subscribe(topic);
+}
+
 void MqttManager::onMqttMessage(char *topic, byte *payload, unsigned int length) {
-  char message[256];
-  const size_t copyLen = length < sizeof(message) - 1 ? length : sizeof(message) - 1;
-  memcpy(message, payload, copyLen);
-  message[copyLen] = '\0';
-  Serial.printf("MQTT RX %s -> %s\n", topic, message);
+  if (instance == nullptr) {
+    return;
+  }
+
+  instance->storeMessage(topic, payload, length);
+}
+
+void MqttManager::storeMessage(const char *topic, const byte *payload, unsigned int length) {
+  pendingMessage.topic = topic;
+  pendingMessage.payload = String(reinterpret_cast<const char *>(payload), length);
+  messagePending = true;
+
+  Serial.printf("MQTT RX %s -> %s\n", topic, pendingMessage.payload.c_str());
+}
+
+bool MqttManager::getMessage(MqttIncomingMessage &message) {
+  if (!messagePending) {
+    return false;
+  }
+
+  message = std::move(pendingMessage);
+  messagePending = false;
+  pendingMessage = {};
+  return true;
 }
