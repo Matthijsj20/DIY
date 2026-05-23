@@ -129,9 +129,14 @@ case "$COMMAND" in
     ;;
   compiledb)
     if [[ -n "$PROJECT" ]]; then
-      PROJECT_DIR="$(resolve_project_dir "$PROJECT")"
-      exec "$PIO" run -d "$PROJECT_DIR" -t compiledb
+      PROJECTS=("$PROJECT")
+    else
+      PROJECTS=(bell buzzer)
     fi
-    exec python3 "$ROOT/scripts/refresh-intellisense.py"
+    for proj in "${PROJECTS[@]}"; do
+      PROJECT_DIR="$(resolve_project_dir "$proj")"
+      "$PIO" run -d "$PROJECT_DIR" -t compiledb
+    done
+    python3 "$ROOT/scripts/refresh-intellisense.py"
     ;;
 esac
