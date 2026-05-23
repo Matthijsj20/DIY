@@ -7,15 +7,16 @@
 
 namespace {
 constexpr char kTopic[] = "/doorbell/pressed";
-constexpr unsigned long kPublishIntervalMs = 1000;
+constexpr unsigned long kDebounceDelayMs = 50;
 
 WifiManager wifiManager;
 MqttManager mqttManager;
 
-bool doorbellPressed = false;
+volatile bool interruptTriggered = false;
+unsigned long lastDebounceTimeMs = 0;
 
 void IRAM_ATTR doorbellPressedISR() {
-  doorbellPressed = true;
+  interruptTriggered = true;
 }
 
 void publishDoorbellState() {
@@ -24,6 +25,22 @@ void publishDoorbellState() {
     return;
   }
   Serial.println("MQTT publish success: Doorbell pressed");
+}
+
+void handleDoorbellInterrupt() {
+
+  const unsigned long nowMs = millis();
+  if (nowMs - lastDebounceTimeMs < kDebounceDelayMs) {
+    return;
+  }
+
+  interruptTriggered = false;
+  if (digitalRead(DOORBELL_PIN) != LOW) {
+    return;
+  }
+
+  lastDebounceTimeMs = nowMs;
+  publishDoorbellState();
 }
 } // namespace
 
@@ -49,8 +66,7 @@ void loop() {
 
   mqttManager.loop();
 
-  if (doorbellPressed) {
-    doorbellPressed = !doorbellPressed;
-    publishDoorbellState();
+  if (interruptTriggered) {
+    handleDoorbellInterrupt();
   }
 }
