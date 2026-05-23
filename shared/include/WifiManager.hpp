@@ -1,5 +1,4 @@
 #pragma once
-#include "secrets.h"
 #include <WiFi.h>
 
 class WifiManager {

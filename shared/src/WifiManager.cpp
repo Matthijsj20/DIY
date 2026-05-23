@@ -1,4 +1,5 @@
 #include "WifiManager.hpp"
+#include "secrets.h"
 
 WifiManager::WifiManager() {}
 

@@ -33,6 +33,15 @@ def dedupe_key(entry: dict) -> str:
     return entry["file"]
 
 
+def remap_shared_library_paths(command: str) -> str:
+    """Point clangd at shared/ instead of stale PlatformIO libdeps copies."""
+    shared_include = str((ROOT / "shared" / "include").resolve())
+    shared_src = str((ROOT / "shared" / "src").resolve())
+    command = re.sub(r"-I\S*doorbell-shared/include", f"-I{shared_include}", command)
+    command = re.sub(r"-I\S*doorbell-shared/src", f"-I{shared_src}", command)
+    return command
+
+
 def shared_source_entries(project: str, entries: list[dict]) -> list[dict]:
     project_dir = ROOT / project
     shared_src = ROOT / "shared" / "src"
@@ -61,6 +70,7 @@ def shared_source_entries(project: str, entries: list[dict]) -> list[dict]:
         else:
             lib_name = Path(lib_source).name
             command = re.sub(rf"(?<=\s){re.escape(lib_name)}(?=\s*$)", shared_source, command)
+        command = remap_shared_library_paths(command)
         merged.append(
             {
                 "directory": str(project_dir.resolve()),

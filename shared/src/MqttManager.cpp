@@ -1,4 +1,5 @@
 #include "MqttManager.hpp"
+#include "secrets.h"
 
 #include <cstring>
 
@@ -38,9 +39,8 @@ void MqttManager::connect() {
   }
 
   const bool connected =
-      strlen(MQTT_USER) > 0
-          ? mqtt.connect(MQTT_CLIENT_ID, MQTT_USER, MQTT_PASS)
-          : mqtt.connect(MQTT_CLIENT_ID);
+      strlen(MQTT_USER) > 0 ? mqtt.connect(MQTT_CLIENT_ID, MQTT_USER, MQTT_PASS)
+                            : mqtt.connect(MQTT_CLIENT_ID);
 
   if (connected) {
     Serial.println();

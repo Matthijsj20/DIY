@@ -2,8 +2,6 @@
 #include <PubSubClient.h>
 #include <WiFiClient.h>
 
-#include "secrets.h"
-
 struct MqttIncomingMessage {
   String topic;
   String payload;
