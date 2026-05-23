@@ -1,7 +1,10 @@
 #include "MqttManager.hpp"
 
-MqttManager::MqttManager() {
-  mqtt = PubSubClient(wifiClient);
+#include <cstring>
+
+MqttManager::MqttManager() : mqtt(wifiClient) {
+  mqtt.setServer(MQTT_BROKER, MQTT_PORT);
+  mqtt.setCallback(onMqttMessage);
 }
 
 MqttManager::~MqttManager() {
@@ -16,9 +19,6 @@ void MqttManager::connect() {
     return;
   }
 
-  mqtt.setServer(MQTT_BROKER, MQTT_PORT);
-  mqtt.setCallback(onMqttMessage);
-
   Serial.print("Connecting to MQTT broker");
   while (!mqtt.connected()) {
     const bool connected = strlen(MQTT_USER) > 0
@@ -27,6 +27,7 @@ void MqttManager::connect() {
     if (!connected) {
       delay(2000);
       Serial.print('.');
+      yield();
     }
   }
   Serial.println();
@@ -42,5 +43,9 @@ bool MqttManager::publish(const char *topic, const char *message) {
 }
 
 void MqttManager::onMqttMessage(char *topic, byte *payload, unsigned int length) {
-  Serial.printf("MQTT RX %s -> %s\n", topic, payload);
+  char message[256];
+  const size_t copyLen = length < sizeof(message) - 1 ? length : sizeof(message) - 1;
+  memcpy(message, payload, copyLen);
+  message[copyLen] = '\0';
+  Serial.printf("MQTT RX %s -> %s\n", topic, message);
 }

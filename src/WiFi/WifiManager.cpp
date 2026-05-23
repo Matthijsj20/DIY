@@ -18,6 +18,7 @@ void WifiManager::connect() {
   Serial.println();
   Serial.print("WiFi connected, IP: ");
   Serial.println(WiFi.localIP());
+  delay(500);
 }
 
 bool WifiManager::isConnected() const {

@@ -46,11 +46,12 @@ void handleDoorbellInterrupt() {
 
 void setup() {
   Serial.begin(115200);
-  pinMode(DOORBELL_PIN, INPUT_PULLUP);
-  attachInterrupt(DOORBELL_PIN, doorbellPressedISR, FALLING);
 
   wifiManager.connect(); // Blocking call until connected
   mqttManager.connect(); // Blocking call until connected
+
+  pinMode(DOORBELL_PIN, INPUT_PULLUP);
+  attachInterrupt(DOORBELL_PIN, doorbellPressedISR, FALLING);
 }
 
 void loop() {
