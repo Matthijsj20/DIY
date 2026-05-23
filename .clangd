@@ -1,0 +1,16 @@
+# PlatformIO uses xtensa-gcc flags that clangd (clang) does not understand.
+# See: https://github.com/platformio/platformio-core/issues/4092
+CompileFlags:
+  CompilationDatabase: .
+  Add:
+    - -Wno-unknown-warning-option
+  Remove:
+    - -m*
+    - -fstrict-volatile-bitfields
+    - -fno-tree-switch-conversion
+    - -free
+    - -fipa-pta
+
+Diagnostics:
+  Suppress:
+    - pp_including_mainfile_in_preamble

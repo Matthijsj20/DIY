@@ -3,4 +3,4 @@
 .clang-format
 compile_commands.json
 .cache/
-.clangd
+include/secrets.h
