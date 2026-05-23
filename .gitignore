@@ -1,0 +1,5 @@
+.pio/**
+.vscode/**
+.clang-format
+compile_commands.json
+.cache/
