@@ -12,7 +12,7 @@ MqttManager mqttManager;
 bool ledOn = false;
 unsigned long ledOffAt = 0;
 
-constexpr unsigned long kLedOnDurationMs = 1000;
+constexpr unsigned long kLedOnDurationMs = 5000;
 
 void updateLed() {
   if (ledOn && millis() >= ledOffAt) {
