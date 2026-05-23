@@ -1,8 +1,10 @@
-.pio/**
-.vscode/**
-.clang-format
-compile_commands.json
-.cache/
-include/secrets.h
-.clangd
+# PlatformIO / IDE artifacts (any project under this repo)
+**/.pio/**
+**/.vscode/**
+**/.clang-format
+**/compile_commands.json
+**/.cache/
+**/include/secrets.h
+**/.clangd
+
 .DS_Store
