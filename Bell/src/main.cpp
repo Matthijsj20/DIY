@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <cstring>
 
+#include "ConnectionStatusLeds.hpp"
 #include "WifiManager.hpp"
 #include "MqttManager.hpp"
 #include "pins.hpp"
@@ -8,51 +9,16 @@
 namespace {
 constexpr char kTopic[] = "/doorbell/pressed";
 constexpr unsigned long kDebounceDelayMs = 50;
-constexpr unsigned long kLedBlinkIntervalMs = 500;
 
 WifiManager wifiManager;
 MqttManager mqttManager;
+ConnectionStatusLeds statusLeds(LED_RED_PIN, LED_GREEN_PIN);
 
 volatile bool interruptTriggered = false;
 unsigned long lastDebounceTimeMs = 0;
-unsigned long lastBlinkMs = 0;
-bool blinkOn = false;
 
 void IRAM_ATTR doorbellPressedISR() {
   interruptTriggered = true;
-}
-
-void setRedLed(bool on) {
-  digitalWrite(LED_RED_PIN, on ? HIGH : LOW);
-}
-
-void setGreenLed(bool on) {
-  digitalWrite(LED_GREEN_PIN, on ? HIGH : LOW);
-}
-
-void updateStatusLeds() {
-  const unsigned long nowMs = millis();
-  if (nowMs - lastBlinkMs >= kLedBlinkIntervalMs) {
-    lastBlinkMs = nowMs;
-    blinkOn = !blinkOn;
-  }
-
-  const bool wifiConnected = wifiManager.isConnected();
-  const bool mqttConnected = mqttManager.isConnected();
-
-  if (wifiConnected && mqttConnected) {
-    setRedLed(false);
-    setGreenLed(true);
-    return;
-  }
-
-  setGreenLed(blinkOn);
-
-  if (!wifiConnected) {
-    setRedLed(true);
-  } else {
-    setRedLed(blinkOn);
-  }
 }
 
 void publishDoorbellState() {
@@ -81,10 +47,7 @@ void handleDoorbellInterrupt() {
 
 void setup() {
   Serial.begin(115200);
-  pinMode(LED_RED_PIN, OUTPUT);
-  pinMode(LED_GREEN_PIN, OUTPUT);
-  setRedLed(true);
-  setGreenLed(false);
+  statusLeds.begin();
 
   pinMode(DOORBELL_PIN, INPUT_PULLUP);
   attachInterrupt(DOORBELL_PIN, doorbellPressedISR, FALLING);
@@ -93,12 +56,12 @@ void setup() {
 }
 
 void loop() {
-  updateStatusLeds();
-
   wifiManager.connect();
   if (wifiManager.isConnected()) {
     mqttManager.connect();
   }
+
+  statusLeds.update(wifiManager.isConnected(), mqttManager.isConnected());
 
   mqttManager.loop();
 

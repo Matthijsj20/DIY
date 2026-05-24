@@ -1,7 +1,7 @@
 {
   "name": "doorbell-shared",
   "version": "1.0.0",
-  "description": "Shared WiFi and MQTT managers for Bell and Buzzer",
+  "description": "Shared WiFi, MQTT, and connection status LED helpers for Bell and Buzzer",
   "frameworks": "arduino",
   "platforms": "espressif32"
 }
