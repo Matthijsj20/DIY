@@ -19,7 +19,7 @@ constexpr unsigned long kInternalLedOnDurationMs = 5000;
 
 void updateInternalLed() {
   if (internalLedOn && millis() >= internalLedOffAt) {
-    digitalWrite(INTERNAL_LED_PIN, LOW);
+    digitalWrite(BUZZER_PIN, LOW);
     internalLedOn = false;
   }
 }
@@ -28,7 +28,7 @@ void onDoorbellPressed() {
   if (internalLedOn) {
     return;
   }
-  digitalWrite(INTERNAL_LED_PIN, HIGH);
+  digitalWrite(BUZZER_PIN, HIGH);
   internalLedOn = true;
   internalLedOffAt = millis() + kInternalLedOnDurationMs;
 }
@@ -38,14 +38,14 @@ void onDoorbellPressed() {
 void setup() {
   Serial.begin(115200);
   statusLeds.begin();
-  pinMode(INTERNAL_LED_PIN, OUTPUT);
-  digitalWrite(INTERNAL_LED_PIN, LOW);
+  pinMode(BUZZER_PIN, OUTPUT);
+  digitalWrite(BUZZER_PIN, LOW);
 
   wifiManager.connect();
 }
 
 void loop() {
-  wifiManager.connect();
+  wifiManager.maintain();
   if (wifiManager.isConnected()) {
     mqttManager.connect();
     if (mqttManager.isConnected()) {

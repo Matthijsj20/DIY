@@ -7,9 +7,14 @@ public:
   ~WifiManager();
 
   /**
-   * Start or retry WiFi connection. Call repeatedly from loop(); non-blocking.
+   * Block until WiFi is connected. Call once from setup().
    */
   void connect();
+
+  /**
+   * Non-blocking reconnect after a drop. Call repeatedly from loop().
+   */
+  void maintain();
 
   /**
    * Check if the WiFi connection is established.
@@ -25,8 +30,11 @@ public:
 
 private:
   static constexpr unsigned long kRetryIntervalMs = 500;
+  static constexpr unsigned long kConnectionTimeoutMs = 30000;
 
   unsigned long lastAttemptMs = 0;
+  unsigned long connectionStartedMs = 0;
   bool connectionStarted = false;
   bool loggedConnected = false;
+  bool wasConnected = false;
 };

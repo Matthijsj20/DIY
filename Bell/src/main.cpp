@@ -56,7 +56,7 @@ void setup() {
 }
 
 void loop() {
-  wifiManager.connect();
+  wifiManager.maintain();
   if (wifiManager.isConnected()) {
     mqttManager.connect();
   }
