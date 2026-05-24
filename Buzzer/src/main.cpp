@@ -45,25 +45,29 @@ void setup() {
 }
 
 void loop() {
+  updateInternalLed();
+
   wifiManager.maintain();
-  if (wifiManager.isConnected()) {
-    mqttManager.connect();
-    if (mqttManager.isConnected()) {
-      if (!mqttSubscribed) {
-        mqttManager.subscribe("/doorbell/pressed");
-        mqttSubscribed = true;
-      }
-    } else {
-      mqttSubscribed = false;
-    }
-  } else {
+  if (!wifiManager.isConnected()) {
     mqttSubscribed = false;
+    statusLeds.update(false, false);
+    return;
   }
 
-  statusLeds.update(wifiManager.isConnected(), mqttManager.isConnected());
+  mqttManager.connect();
+  if (!mqttManager.isConnected()) {
+    mqttSubscribed = false;
+    statusLeds.update(true, false);
+    return;
+  }
 
+  if (!mqttSubscribed) {
+    mqttManager.subscribe("/doorbell/pressed");
+    mqttSubscribed = true;
+  }
+
+  statusLeds.update(true, true);
   mqttManager.loop();
-  updateInternalLed();
 
   MqttIncomingMessage message;
   if (mqttManager.getMessage(message)) {

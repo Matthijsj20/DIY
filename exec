@@ -12,6 +12,7 @@ Commands:
   upload    Build and upload to the device
   monitor   Open the serial monitor
   compiledb Refresh IDE IntelliSense (compile_commands.json + shared paths)
+  clean     Remove PlatformIO cache (.pio) for a project
 
 Projects (-p, --project):
   bell      Doorbell detector (bell/)
@@ -22,9 +23,10 @@ Examples:
   ./exec upload --project bell
   ./exec monitor
   ./exec compiledb
+  ./exec clean -p bell
 
 Options:
-  -p, --project <name>   Required for build/upload. Optional for compiledb.
+  -p, --project <name>   Required for build/upload/clean. Optional for compiledb.
   -h, --help             Show this help
 EOF
 }
@@ -68,7 +70,7 @@ PROJECT=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    build|upload|monitor|compiledb)
+    build|upload|monitor|compiledb|clean)
       if [[ -n "$COMMAND" ]]; then
         echo "Error: only one command allowed." >&2
         exit 1
@@ -97,7 +99,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [[ -z "$COMMAND" ]]; then
-  echo "Error: missing command (build, upload, monitor, or compiledb)." >&2
+  echo "Error: missing command (build, upload, monitor, compiledb, or clean)." >&2
   usage >&2
   exit 1
 fi
@@ -138,5 +140,14 @@ case "$COMMAND" in
       "$PIO" run -d "$PROJECT_DIR" -t compiledb
     done
     python3 "$ROOT/scripts/refresh-intellisense.py"
+    ;;
+  clean)
+    PROJECT_DIR="$(resolve_project_dir "$PROJECT")"
+    if [[ -d "$PROJECT_DIR/.pio" ]]; then
+      rm -rf "$PROJECT_DIR/.pio"
+      echo "Removed $PROJECT_DIR/.pio"
+    else
+      echo "No PlatformIO cache at $PROJECT_DIR/.pio"
+    fi
     ;;
 esac

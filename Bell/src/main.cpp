@@ -57,12 +57,18 @@ void setup() {
 
 void loop() {
   wifiManager.maintain();
-  if (wifiManager.isConnected()) {
-    mqttManager.connect();
+  if (!wifiManager.isConnected()) {
+    statusLeds.update(false, false);
+    return;
   }
 
-  statusLeds.update(wifiManager.isConnected(), mqttManager.isConnected());
+  mqttManager.connect();
+  if (!mqttManager.isConnected()) {
+    statusLeds.update(true, false);
+    return;
+  }
 
+  statusLeds.update(true, true);
   mqttManager.loop();
 
   if (interruptTriggered) {
