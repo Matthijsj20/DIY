@@ -4,7 +4,6 @@ import time
 from mac_notifications import client
 
 
-# default values (can be changed via menu)
 WORK_TIME = 10
 RELAX_TIME = 5
 
@@ -37,6 +36,23 @@ class EyeCareApp(rumps.App):
 
         self.event_timer = rumps.Timer(self.handle_event, 0.2)
         self.event_timer.start()
+
+    # -----------------------------
+    # HELPERS
+    # -----------------------------
+
+    def format_mmss(self, seconds):
+        m, s = divmod(seconds, 60)
+        return f"{m:02d}:{s:02d}"
+
+    def parse_mmss(self, text):
+        text = text.strip()
+
+        if ":" in text:
+            m, s = text.split(":")
+            return int(m) * 60 + int(s)
+
+        return int(text) * 60
 
     # -----------------------------
     # TIMER LOGIC
@@ -117,6 +133,12 @@ class EyeCareApp(rumps.App):
 
         self.title = f"{self.state} {m:02d}:{s:02d}"
 
+        # dynamic button label (THIS is the fix)
+        if self.state == "Work":
+            self.menu["Toggle"].title = "Start Relax"
+        else:
+            self.menu["Toggle"].title = "Start Work"
+
         self.menu["State"].title = f"State: {self.state}"
 
     # -----------------------------
@@ -134,34 +156,37 @@ class EyeCareApp(rumps.App):
     def set_work_time(self, _):
         response = rumps.Window(
             title="Work time",
-            message="Enter work time in minutes",
-            default_text=str(self.work_time),
+            message="Enter time (MM:SS)",
+            default_text=self.format_mmss(self.work_time),
             ok="Set",
             cancel="Cancel"
         ).run()
 
-        if response.clicked:
-            try:
-                self.work_time = int(response.text)
-                rumps.notification("Updated", "Work time set", f"{self.work_time} min")
-            except ValueError:
-                rumps.alert("Invalid number")
+        if not response.clicked:
+            return
+
+        try:
+            self.work_time = self.parse_mmss(response.text)
+        except:
+            rumps.alert("Invalid format. Use MM:SS")
 
     @rumps.clicked("Set Relax Time")
     def set_relax_time(self, _):
         response = rumps.Window(
             title="Relax time",
-            message="Enter relax time in minutes",
-            default_text=str(self.relax_time),
+            message="Enter time (MM:SS)",
+            default_text=self.format_mmss(self.relax_time),
             ok="Set",
             cancel="Cancel"
         ).run()
 
-        if response.clicked:
-            try:
-                self.relax_time = int(response.text)
-            except ValueError:
-                rumps.alert("Invalid number")
+        if not response.clicked:
+            return
+
+        try:
+            self.relax_time = self.parse_mmss(response.text)
+        except:
+            rumps.alert("Invalid format. Use MM:SS")
 
 
 if __name__ == "__main__":
