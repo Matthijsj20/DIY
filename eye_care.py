@@ -4,7 +4,7 @@ import time
 from mac_notifications import client
 
 
-WORK_TIME = 10   # shorten for debugging first
+WORK_TIME = 10
 RELAX_TIME = 5
 
 
@@ -20,7 +20,7 @@ class EyeCareApp(rumps.App):
         self.pending_event = None
 
         self.menu = [
-            "Start Relax",
+            "Toggle",
             "Pause",
             "State"
         ]
@@ -30,12 +30,11 @@ class EyeCareApp(rumps.App):
         self.ui_timer = rumps.Timer(self.update_ui, 1)
         self.ui_timer.start()
 
-        # VERY IMPORTANT: event pump (this is the missing piece before)
         self.event_timer = rumps.Timer(self.handle_event, 0.2)
         self.event_timer.start()
 
     # -----------------------------
-    # TIMER LOGIC (THREAD SAFE)
+    # TIMER LOGIC
     # -----------------------------
 
     def start_work(self):
@@ -48,11 +47,11 @@ class EyeCareApp(rumps.App):
         self.end_time = time.time() + RELAX_TIME
         self.schedule(RELAX_TIME, "relax_done")
 
-    def relax_done(self):
-        self.pending_event = "relax_done"
-
     def work_done(self):
         self.pending_event = "work_done"
+
+    def relax_done(self):
+        self.pending_event = "relax_done"
 
     def schedule(self, seconds, event):
         if self.timer:
@@ -65,7 +64,7 @@ class EyeCareApp(rumps.App):
         self.pending_event = event
 
     # -----------------------------
-    # MAIN THREAD EVENT HANDLER
+    # EVENT LOOP
     # -----------------------------
 
     def handle_event(self, _):
@@ -81,15 +80,12 @@ class EyeCareApp(rumps.App):
         elif event == "relax_done":
             client.create_notification(
                 title="Back to work",
-                subtitle="Focus time",
-                action_button_str="Start work",
-                action_callback=self.start_work_from_notification
+                subtitle="Focus time"
             )
-
             self.start_work()
 
     # -----------------------------
-    # NOTIFICATION
+    # NOTIFICATIONS
     # -----------------------------
 
     def show_break_notification(self):
@@ -103,9 +99,6 @@ class EyeCareApp(rumps.App):
     def start_relax_from_notification(self, _=None):
         self.start_relax()
 
-    def start_work_from_notification(self, _=None):
-        self.start_work()
-
     # -----------------------------
     # UI
     # -----------------------------
@@ -118,15 +111,25 @@ class EyeCareApp(rumps.App):
         m, s = divmod(max(0, remaining), 60)
 
         self.title = f"{self.state} {m:02d}:{s:02d}"
+
+        # dynamic menu label
+        if self.state == "WORK":
+            self.menu["Toggle"].title = "Start Relax"
+        else:
+            self.menu["Toggle"].title = "Start Work"
+
         self.menu["State"].title = f"State: {self.state}"
 
     # -----------------------------
-    # MENU
+    # MENU ACTIONS
     # -----------------------------
 
-    @rumps.clicked("Start Relax")
-    def manual_relax(self, _):
-        self.start_relax()
+    @rumps.clicked("Toggle")
+    def toggle(self, _):
+        if self.state == "WORK":
+            self.start_relax()
+        else:
+            self.start_work()
 
     @rumps.clicked("Pause")
     def pause(self, sender):
