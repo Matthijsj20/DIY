@@ -166,8 +166,10 @@ class EyeCareApp(rumps.App):
         elif event == "relax_done":
             client.create_notification(
                 title="Back to work",
-                subtitle="Focus time"
+                subtitle="Focus time",
+                sound="Glass"
             )
+
             self.start_work()
 
     # -----------------------------
@@ -178,6 +180,7 @@ class EyeCareApp(rumps.App):
         client.create_notification(
             title="Eye break",
             subtitle="Click Start Relax",
+            sound="Ping",
             action_button_str="Start relax",
             action_callback=self.start_relax_from_notification
         )
