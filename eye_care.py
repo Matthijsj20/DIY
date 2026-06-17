@@ -3,10 +3,16 @@ from threading import Timer
 import time
 from mac_notifications import client
 import AppKit
+import os
+import json
 
 
-WORK_TIME = 10
-RELAX_TIME = 5
+DEFAULT_WORK = 10
+DEFAULT_RELAX = 5
+
+APP_NAME = "EyeCareApp"
+CONFIG_DIR = os.path.expanduser(f"~/Library/Application Support/{APP_NAME}")
+CONFIG_FILE = os.path.join(CONFIG_DIR, "settings.json")
 
 
 class EyeCareApp(rumps.App):
@@ -23,8 +29,8 @@ class EyeCareApp(rumps.App):
         self.pending_event = None
         self.paused = False
 
-        self.work_time = WORK_TIME
-        self.relax_time = RELAX_TIME
+        # load settings FIRST
+        self.load_settings()
 
         self.start_action = rumps.MenuItem("Start Relax", callback=self.start_action_clicked)
         self.pause_action = rumps.MenuItem("Pause", callback=self.pause_resume)
@@ -44,6 +50,37 @@ class EyeCareApp(rumps.App):
 
         self.event_timer = rumps.Timer(self.handle_event, 0.2)
         self.event_timer.start()
+
+    # -----------------------------
+    # SETTINGS STORAGE
+    # -----------------------------
+
+    def load_settings(self):
+        try:
+            with open(CONFIG_FILE, "r") as f:
+                data = json.load(f)
+
+            self.work_time = data.get("work_time", DEFAULT_WORK)
+            self.relax_time = data.get("relax_time", DEFAULT_RELAX)
+
+        except FileNotFoundError:
+            self.work_time = DEFAULT_WORK
+            self.relax_time = DEFAULT_RELAX
+
+        except Exception:
+            self.work_time = DEFAULT_WORK
+            self.relax_time = DEFAULT_RELAX
+
+    def save_settings(self):
+        os.makedirs(CONFIG_DIR, exist_ok=True)
+
+        data = {
+            "work_time": self.work_time,
+            "relax_time": self.relax_time
+        }
+
+        with open(CONFIG_FILE, "w") as f:
+            json.dump(data, f, indent=2)
 
     # -----------------------------
     # HELPERS
@@ -105,7 +142,6 @@ class EyeCareApp(rumps.App):
 
     def pause_resume(self, _):
         if not self.paused:
-            # PAUSE
             if self.timer:
                 self.timer.cancel()
 
@@ -113,7 +149,6 @@ class EyeCareApp(rumps.App):
             self.paused = True
 
         else:
-            # RESUME
             self.paused = False
 
             if self.state == "Work":
@@ -197,7 +232,7 @@ class EyeCareApp(rumps.App):
             self.start_work()
 
     # -----------------------------
-    # SETTINGS
+    # SETTINGS UI
     # -----------------------------
 
     @rumps.clicked("Set Work Time")
@@ -215,6 +250,7 @@ class EyeCareApp(rumps.App):
         if response.clicked:
             try:
                 self.work_time = self.parse_mmss(response.text)
+                self.save_settings()
             except:
                 rumps.alert("Invalid format")
 
@@ -233,6 +269,7 @@ class EyeCareApp(rumps.App):
         if response.clicked:
             try:
                 self.relax_time = self.parse_mmss(response.text)
+                self.save_settings()
             except:
                 rumps.alert("Invalid format")
 
