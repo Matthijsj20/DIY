@@ -13,7 +13,7 @@ class EyeCareApp(rumps.App):
     def __init__(self):
         super().__init__("👁️")
 
-        self.state = "WORK"
+        self.state = "Work"
         self.timer = None
         self.end_time = None
 
@@ -21,7 +21,6 @@ class EyeCareApp(rumps.App):
 
         self.menu = [
             "Toggle",
-            "Pause",
             "State"
         ]
 
@@ -38,12 +37,12 @@ class EyeCareApp(rumps.App):
     # -----------------------------
 
     def start_work(self):
-        self.state = "WORK"
+        self.state = "Work"
         self.end_time = time.time() + WORK_TIME
         self.schedule(WORK_TIME, "work_done")
 
     def start_relax(self):
-        self.state = "RELAX"
+        self.state = "Relax"
         self.end_time = time.time() + RELAX_TIME
         self.schedule(RELAX_TIME, "relax_done")
 
@@ -112,8 +111,7 @@ class EyeCareApp(rumps.App):
 
         self.title = f"{self.state} {m:02d}:{s:02d}"
 
-        # dynamic menu label
-        if self.state == "WORK":
+        if self.state == "Work":
             self.menu["Toggle"].title = "Start Relax"
         else:
             self.menu["Toggle"].title = "Start Work"
@@ -126,19 +124,10 @@ class EyeCareApp(rumps.App):
 
     @rumps.clicked("Toggle")
     def toggle(self, _):
-        if self.state == "WORK":
+        if self.state == "Work":
             self.start_relax()
         else:
             self.start_work()
-
-    @rumps.clicked("Pause")
-    def pause(self, sender):
-        if self.timer:
-            self.timer.cancel()
-
-        self.state = "PAUSED"
-        self.title = "⏸ PAUSED"
-        sender.title = "Resume"
 
 
 if __name__ == "__main__":
