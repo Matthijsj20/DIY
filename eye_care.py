@@ -15,18 +15,23 @@ class EyeCareApp(rumps.App):
         super().__init__("👁️")
 
         self.state = "Work"
+
         self.timer = None
         self.end_time = None
+        self.remaining_time = None
+
         self.pending_event = None
+        self.paused = False
 
         self.work_time = WORK_TIME
         self.relax_time = RELAX_TIME
 
-        # dynamic menu items (IMPORTANT FIX)
         self.start_action = rumps.MenuItem("Start Relax", callback=self.start_action_clicked)
+        self.pause_action = rumps.MenuItem("Pause", callback=self.pause_resume)
 
         self.menu = [
             self.start_action,
+            self.pause_action,
             "Set Work Time",
             "Set Relax Time",
             "State"
@@ -61,30 +66,65 @@ class EyeCareApp(rumps.App):
         return int(text) * 60
 
     # -----------------------------
-    # TIMER LOGIC
+    # TIMER CORE
     # -----------------------------
-
-    def start_work(self):
-        self.state = "Work"
-        self.end_time = time.time() + self.work_time
-        self.schedule(self.work_time, "work_done")
-        self.update_start_button()
-
-    def start_relax(self):
-        self.state = "Relax"
-        self.end_time = time.time() + self.relax_time
-        self.schedule(self.relax_time, "relax_done")
-        self.update_start_button()
 
     def schedule(self, seconds, event):
         if self.timer:
             self.timer.cancel()
+
+        self.end_time = time.time() + seconds
 
         self.timer = Timer(seconds, self.set_event, args=(event,))
         self.timer.start()
 
     def set_event(self, event):
         self.pending_event = event
+
+    # -----------------------------
+    # STATE CONTROL
+    # -----------------------------
+
+    def start_work(self):
+        self.state = "Work"
+        self.paused = False
+        self.schedule(self.work_time, "work_done")
+        self.update_start_button()
+        self.update_pause_button()
+
+    def start_relax(self):
+        self.state = "Relax"
+        self.paused = False
+        self.schedule(self.relax_time, "relax_done")
+        self.update_start_button()
+        self.update_pause_button()
+
+    # -----------------------------
+    # PAUSE / RESUME
+    # -----------------------------
+
+    def pause_resume(self, _):
+        if not self.paused:
+            # PAUSE
+            if self.timer:
+                self.timer.cancel()
+
+            self.remaining_time = max(0, int(self.end_time - time.time()))
+            self.paused = True
+
+        else:
+            # RESUME
+            self.paused = False
+
+            if self.state == "Work":
+                self.schedule(self.remaining_time, "work_done")
+            else:
+                self.schedule(self.remaining_time, "relax_done")
+
+        self.update_pause_button()
+
+    def update_pause_button(self):
+        self.pause_action.title = "Resume" if self.paused else "Pause"
 
     # -----------------------------
     # EVENT LOOP
@@ -130,14 +170,18 @@ class EyeCareApp(rumps.App):
         if not self.end_time:
             return
 
-        remaining = int(self.end_time - time.time())
-        m, s = divmod(max(0, remaining), 60)
+        if self.paused:
+            remaining = self.remaining_time
+        else:
+            remaining = int(self.end_time - time.time())
 
+        m, s = divmod(max(0, remaining), 60)
         self.title = f"{self.state} {m:02d}:{s:02d}"
+
         self.menu["State"].title = f"State: {self.state}"
 
     # -----------------------------
-    # MENU SWITCH LOGIC (IMPORTANT FIX)
+    # MENU SWITCH BUTTON
     # -----------------------------
 
     def update_start_button(self):
@@ -168,13 +212,11 @@ class EyeCareApp(rumps.App):
             cancel="Cancel"
         ).run()
 
-        if not response.clicked:
-            return
-
-        try:
-            self.work_time = self.parse_mmss(response.text)
-        except:
-            rumps.alert("Invalid format. Use MM:SS")
+        if response.clicked:
+            try:
+                self.work_time = self.parse_mmss(response.text)
+            except:
+                rumps.alert("Invalid format")
 
     @rumps.clicked("Set Relax Time")
     def set_relax_time(self, _):
@@ -188,13 +230,11 @@ class EyeCareApp(rumps.App):
             cancel="Cancel"
         ).run()
 
-        if not response.clicked:
-            return
-
-        try:
-            self.relax_time = self.parse_mmss(response.text)
-        except:
-            rumps.alert("Invalid format. Use MM:SS")
+        if response.clicked:
+            try:
+                self.relax_time = self.parse_mmss(response.text)
+            except:
+                rumps.alert("Invalid format")
 
 
 if __name__ == "__main__":
