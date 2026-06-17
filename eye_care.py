@@ -2,6 +2,7 @@ import rumps
 from threading import Timer
 import time
 from mac_notifications import client
+import AppKit
 
 
 WORK_TIME = 10
@@ -16,14 +17,16 @@ class EyeCareApp(rumps.App):
         self.state = "Work"
         self.timer = None
         self.end_time = None
-
         self.pending_event = None
 
         self.work_time = WORK_TIME
         self.relax_time = RELAX_TIME
 
+        # dynamic menu items (IMPORTANT FIX)
+        self.start_action = rumps.MenuItem("Start Relax", callback=self.start_action_clicked)
+
         self.menu = [
-            "Toggle",
+            self.start_action,
             "Set Work Time",
             "Set Relax Time",
             "State"
@@ -40,6 +43,9 @@ class EyeCareApp(rumps.App):
     # -----------------------------
     # HELPERS
     # -----------------------------
+
+    def bring_to_front(self):
+        AppKit.NSApplication.sharedApplication().activateIgnoringOtherApps_(True)
 
     def format_mmss(self, seconds):
         m, s = divmod(seconds, 60)
@@ -62,17 +68,13 @@ class EyeCareApp(rumps.App):
         self.state = "Work"
         self.end_time = time.time() + self.work_time
         self.schedule(self.work_time, "work_done")
+        self.update_start_button()
 
     def start_relax(self):
         self.state = "Relax"
         self.end_time = time.time() + self.relax_time
         self.schedule(self.relax_time, "relax_done")
-
-    def work_done(self):
-        self.pending_event = "work_done"
-
-    def relax_done(self):
-        self.pending_event = "relax_done"
+        self.update_start_button()
 
     def schedule(self, seconds, event):
         if self.timer:
@@ -132,28 +134,32 @@ class EyeCareApp(rumps.App):
         m, s = divmod(max(0, remaining), 60)
 
         self.title = f"{self.state} {m:02d}:{s:02d}"
-
-        # dynamic button label (THIS is the fix)
-        if self.state == "Work":
-            self.menu["Toggle"].title = "Start Relax"
-        else:
-            self.menu["Toggle"].title = "Start Work"
-
         self.menu["State"].title = f"State: {self.state}"
 
     # -----------------------------
-    # MENU ACTIONS
+    # MENU SWITCH LOGIC (IMPORTANT FIX)
     # -----------------------------
 
-    @rumps.clicked("Toggle")
-    def toggle(self, _):
+    def update_start_button(self):
+        if self.state == "Work":
+            self.start_action.title = "Start Relax"
+        else:
+            self.start_action.title = "Start Work"
+
+    def start_action_clicked(self, _):
         if self.state == "Work":
             self.start_relax()
         else:
             self.start_work()
 
+    # -----------------------------
+    # SETTINGS
+    # -----------------------------
+
     @rumps.clicked("Set Work Time")
     def set_work_time(self, _):
+        self.bring_to_front()
+
         response = rumps.Window(
             title="Work time",
             message="Enter time (MM:SS)",
@@ -172,6 +178,8 @@ class EyeCareApp(rumps.App):
 
     @rumps.clicked("Set Relax Time")
     def set_relax_time(self, _):
+        self.bring_to_front()
+
         response = rumps.Window(
             title="Relax time",
             message="Enter time (MM:SS)",
