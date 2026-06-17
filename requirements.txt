@@ -1,0 +1,2 @@
+macos-notifications==0.2.1
+rumps==0.4.0
