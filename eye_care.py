@@ -29,7 +29,6 @@ class EyeCareApp(rumps.App):
         self.pending_event = None
         self.paused = False
 
-        # load settings FIRST
         self.load_settings()
 
         self.start_action = rumps.MenuItem("Start Relax", callback=self.start_action_clicked)
@@ -52,7 +51,7 @@ class EyeCareApp(rumps.App):
         self.event_timer.start()
 
     # -----------------------------
-    # SETTINGS STORAGE
+    # SETTINGS
     # -----------------------------
 
     def load_settings(self):
@@ -63,34 +62,24 @@ class EyeCareApp(rumps.App):
             self.work_time = data.get("work_time", DEFAULT_WORK)
             self.relax_time = data.get("relax_time", DEFAULT_RELAX)
 
-        except FileNotFoundError:
-            self.work_time = DEFAULT_WORK
-            self.relax_time = DEFAULT_RELAX
-
-        except Exception:
+        except:
             self.work_time = DEFAULT_WORK
             self.relax_time = DEFAULT_RELAX
 
     def save_settings(self):
         os.makedirs(CONFIG_DIR, exist_ok=True)
-
-        data = {
-            "work_time": self.work_time,
-            "relax_time": self.relax_time
-        }
-
         with open(CONFIG_FILE, "w") as f:
-            json.dump(data, f, indent=2)
+            json.dump({
+                "work_time": self.work_time,
+                "relax_time": self.relax_time
+            }, f, indent=2)
 
     # -----------------------------
-    # HELPERS
+    # HELPERS (MISSING BEFORE — FIXED)
     # -----------------------------
-
-    def bring_to_front(self):
-        AppKit.NSApplication.sharedApplication().activateIgnoringOtherApps_(True)
 
     def format_mmss(self, seconds):
-        m, s = divmod(seconds, 60)
+        m, s = divmod(int(seconds), 60)
         return f"{m:02d}:{s:02d}"
 
     def parse_mmss(self, text):
@@ -111,7 +100,6 @@ class EyeCareApp(rumps.App):
             self.timer.cancel()
 
         self.end_time = time.time() + seconds
-
         self.timer = Timer(seconds, self.set_event, args=(event,))
         self.timer.start()
 
@@ -216,7 +204,7 @@ class EyeCareApp(rumps.App):
         self.menu["State"].title = f"State: {self.state}"
 
     # -----------------------------
-    # MENU SWITCH BUTTON
+    # START BUTTON
     # -----------------------------
 
     def update_start_button(self):
@@ -232,46 +220,60 @@ class EyeCareApp(rumps.App):
             self.start_work()
 
     # -----------------------------
-    # SETTINGS UI
+    # SETTINGS WINDOWS
     # -----------------------------
 
     @rumps.clicked("Set Work Time")
     def set_work_time(self, _):
-        self.bring_to_front()
 
-        response = rumps.Window(
-            title="Work time",
-            message="Enter time (MM:SS)",
-            default_text=self.format_mmss(self.work_time),
-            ok="Set",
-            cancel="Cancel"
-        ).run()
+        AppKit.NSApplication.sharedApplication().activateIgnoringOtherApps_(True)
 
-        if response.clicked:
-            try:
-                self.work_time = self.parse_mmss(response.text)
-                self.save_settings()
-            except:
-                rumps.alert("Invalid format")
+        def open_window(timer):
+            timer.stop()
+
+            response = rumps.Window(
+                title="Work time",
+                message="Enter time (MM:SS)",
+                default_text=self.format_mmss(self.work_time),
+                ok="Set",
+                cancel="Cancel"
+            ).run()
+
+            if response.clicked:
+                try:
+                    self.work_time = self.parse_mmss(response.text)
+                    self.save_settings()
+                except:
+                    rumps.alert("Invalid format")
+
+        t = rumps.Timer(open_window, 0.05)
+        t.start()
 
     @rumps.clicked("Set Relax Time")
     def set_relax_time(self, _):
-        self.bring_to_front()
 
-        response = rumps.Window(
-            title="Relax time",
-            message="Enter time (MM:SS)",
-            default_text=self.format_mmss(self.relax_time),
-            ok="Set",
-            cancel="Cancel"
-        ).run()
+        AppKit.NSApplication.sharedApplication().activateIgnoringOtherApps_(True)
 
-        if response.clicked:
-            try:
-                self.relax_time = self.parse_mmss(response.text)
-                self.save_settings()
-            except:
-                rumps.alert("Invalid format")
+        def open_window(timer):
+            timer.stop()
+
+            response = rumps.Window(
+                title="Relax time",
+                message="Enter time (MM:SS)",
+                default_text=self.format_mmss(self.relax_time),
+                ok="Set",
+                cancel="Cancel"
+            ).run()
+
+            if response.clicked:
+                try:
+                    self.relax_time = self.parse_mmss(response.text)
+                    self.save_settings()
+                except:
+                    rumps.alert("Invalid format")
+
+        t = rumps.Timer(open_window, 0.05)
+        t.start()
 
 
 if __name__ == "__main__":
